@@ -7,6 +7,8 @@ import LiveResults from "./pages/admin/LiveResults";
 import PollHistory from "./pages/admin/PollHistory";
 import AnswerPoll from "./pages/student/AnswerPoll";
 import PollResult from "./pages/student/PollResult";
+import Waiting from "./pages/student/Waiting";
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
         <Route path="/" element={<RoleSelect />} />
 
         {}
+        <Route path="/waiting" element={<Waiting />} />
         <Route path="/join" element={<JoinPoll />} />
         <Route path="/poll" element={<AnswerPoll />} />
         <Route path="/result" element={<PollResult />} />
