@@ -1,11 +1,18 @@
 import { Server, Socket } from "socket.io";
+import { SOCKET_EVENTS } from "../utils/socketEvents";
+import { studentService } from "../services/StudentService";
 
 export const pollSocketHandler = (io: Server) => {
   io.on("connection", (socket: Socket) => {
-    console.log("User connected:", socket.id);
+    console.log("Socket connected:", socket.id);
+
+    socket.on(SOCKET_EVENTS.STUDENT_JOIN, ({ name }) => {
+      studentService.addStudent(socket.id, name);
+    });
 
     socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
+      studentService.removeStudent(socket.id);
+      console.log("Socket disconnected:", socket.id);
     });
   });
 };
