@@ -1,35 +1,29 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import RoleSelect from "./pages/RoleSelect";
 import JoinPoll from "./pages/student/JoinPoll";
+import Waiting from "./pages/student/Waiting";
+import AnswerPoll from "./pages/student/AnswerPoll";
+
 import CreatePoll from "./pages/admin/CreatePoll";
 import LiveResults from "./pages/admin/LiveResults";
-import PollHistory from "./pages/admin/PollHistory";
-import AnswerPoll from "./pages/student/AnswerPoll";
-import PollResult from "./pages/student/PollResult";
-import Waiting from "./pages/student/Waiting";
 
-
-function App() {
+const App = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        {}
-        <Route path="/" element={<RoleSelect />} />
+    <Routes>
+      {/* HOME */}
+      <Route path="/" element={<RoleSelect />} />
 
-        {}
-        <Route path="/waiting" element={<Waiting />} />
-        <Route path="/join" element={<JoinPoll />} />
-        <Route path="/poll" element={<AnswerPoll />} />
-        <Route path="/result" element={<PollResult />} />
+      {/* STUDENT */}
+      <Route path="/join" element={<JoinPoll />} />
+      <Route path="/waiting" element={<Waiting />} />
+      <Route path="/poll" element={<AnswerPoll />} />
 
-        {}
-        <Route path="/admin/create" element={<CreatePoll />} />
-        <Route path="/admin/live" element={<LiveResults />} />
-        <Route path="/admin/history" element={<PollHistory />} />
-      </Routes>
-    </BrowserRouter>
+      {/* ADMIN */}
+      <Route path="/admin/create" element={<CreatePoll />} />
+      <Route path="/admin/live" element={<LiveResults />} />
+    </Routes>
   );
-}
+};
 
 export default App;

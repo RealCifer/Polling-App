@@ -1,0 +1,7 @@
+export const SOCKET_EVENTS = {
+  POLL_STARTED: "POLL_STARTED",
+  POLL_UPDATED: "POLL_UPDATED",
+  GET_ACTIVE_POLL: "GET_ACTIVE_POLL",
+  POLL_CREATE: "poll:create",
+  VOTE_CAST: "vote:cast",
+};

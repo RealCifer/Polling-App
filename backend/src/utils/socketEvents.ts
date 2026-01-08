@@ -4,4 +4,6 @@ export const SOCKET_EVENTS = {
   CREATE_POLL: "poll:create",
   POLL_STARTED: "poll:started",
   POLL_ENDED: "poll:ended",
+
+  GET_ACTIVE_POLL: "poll:getActive",
 };

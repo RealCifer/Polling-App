@@ -1,12 +1,27 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { socket } from "../../services/socket";
+
 const Waiting = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handlePollStart = () => {
+      navigate("/poll");
+    };
+
+    socket.on("POLL_STARTED", handlePollStart);
+
+    socket.emit("GET_ACTIVE_POLL");
+
+    return () => {
+      socket.off("POLL_STARTED", handlePollStart);
+    };
+  }, [navigate]);
+
   return (
     <div className="waiting-container">
-      <div className="waiting-card">
-        <div className="spinner"></div>
-        <p className="waiting-text">
-          Wait for the teacher to ask questions..
-        </p>
-      </div>
+      <p>Wait for the teacher to ask questions...</p>
     </div>
   );
 };

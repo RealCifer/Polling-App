@@ -1,0 +1,46 @@
+.join-page {
+  min-height: 100vh;
+  width: 100vw;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f4f4f4;
+}
+
+.join-card {
+  background: white;
+  color: #222;
+
+  padding: 32px;
+  width: 360px;
+
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.join-card h1 {
+  margin: 0;
+  text-align: center;
+}
+
+.join-card input {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.join-card button {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+
+  background: #6c5ce7;
+  color: white;
+  cursor: pointer;
+}

@@ -1,43 +1,36 @@
 import { Server, Socket } from "socket.io";
-import { SOCKET_EVENTS } from "../utils/socketEvents";
-import { studentService } from "../services/StudentService";
-import { pollService } from "../services/PollService";
+
+let activePoll: any = null;
 
 export const pollSocketHandler = (io: Server) => {
   io.on("connection", (socket: Socket) => {
     console.log("Socket connected:", socket.id);
 
-    socket.on(SOCKET_EVENTS.STUDENT_JOIN, ({ name }) => {
-      studentService.addStudent(socket.id, name);
+    socket.on("poll:create", ({ question, options }) => {
+      activePoll = {
+        id: Date.now().toString(),
+        question,
+        options: options.map((text: string) => ({
+          text,
+          votes: 0,
+        })),
+      };
+
+      io.emit("POLL_STARTED", { poll: activePoll });
     });
 
-    socket.on(
-      SOCKET_EVENTS.CREATE_POLL,
-      async ({ question, options, duration }) => {
-        try {
-          const poll = await pollService.createPoll(
-            question,
-            options,
-            duration
-          );
-
-          io.emit(SOCKET_EVENTS.POLL_STARTED, {
-            poll,
-          });
-
-          setTimeout(async () => {
-            await pollService.endPoll();
-            io.emit(SOCKET_EVENTS.POLL_ENDED);
-          }, duration * 1000);
-        } catch (err: any) {
-          socket.emit("error", err.message);
-        }
+    socket.on("GET_ACTIVE_POLL", () => {
+      if (activePoll) {
+        socket.emit("POLL_STARTED", { poll: activePoll });
       }
-    );
+    });
 
-    socket.on("disconnect", () => {
-      studentService.removeStudent(socket.id);
-      console.log("Socket disconnected:", socket.id);
+    socket.on("vote:cast", ({ optionIndex }) => {
+      if (!activePoll) return;
+
+      activePoll.options[optionIndex].votes += 1;
+
+      io.emit("POLL_UPDATED", { poll: activePoll });
     });
   });
 };

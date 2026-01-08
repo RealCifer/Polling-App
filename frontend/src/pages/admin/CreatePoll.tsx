@@ -1,46 +1,51 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { socket } from "../../services/socket";
+import "../../styles/createPoll.css";
 
 const CreatePoll = () => {
+  const navigate = useNavigate();
   const [question, setQuestion] = useState("");
-  const [options, setOptions] = useState<string[]>(["", ""]);
+  const [options, setOptions] = useState(["", ""]);
 
-  const handleOptionChange = (index: number, value: string) => {
-    const updated = [...options];
-    updated[index] = value;
-    setOptions(updated);
-  };
+  const addOption = () => setOptions([...options, ""]);
 
-  const addOption = () => {
-    setOptions([...options, ""]);
+  const handleCreatePoll = () => {
+    if (!question.trim() || options.some(o => !o.trim())) return;
+
+    socket.emit("poll:create", { question, options });
+    navigate("/admin/live");
   };
 
   return (
-    <div className="create-poll-container">
-      <div className="create-poll-card">
-        <h2 className="create-poll-title">Create a Poll</h2>
+    <div className="page-center">
+      <div className="card">
+        <h2>Create a Poll</h2>
 
         <input
-          className="create-poll-input"
           placeholder="Enter your question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
 
-        {options.map((opt, index) => (
+        {options.map((opt, i) => (
           <input
-            key={index}
-            className="create-poll-input"
-            placeholder={`Option ${index + 1}`}
+            key={i}
+            placeholder={`Option ${i + 1}`}
             value={opt}
-            onChange={(e) => handleOptionChange(index, e.target.value)}
+            onChange={(e) => {
+              const copy = [...options];
+              copy[i] = e.target.value;
+              setOptions(copy);
+            }}
           />
         ))}
 
-        <button className="create-poll-add" onClick={addOption}>
+        <button className="secondary" onClick={addOption}>
           + Add Option
         </button>
 
-        <button className="create-poll-submit">
+        <button className="primary" onClick={handleCreatePoll}>
           Create Poll
         </button>
       </div>
