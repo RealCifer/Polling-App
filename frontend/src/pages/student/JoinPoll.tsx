@@ -1,7 +1,19 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { socket } from "../../services/socket";
 
 const JoinPoll = () => {
   const [name, setName] = useState("");
+  const navigate = useNavigate();
+
+  const handleJoin = () => {
+    if (!name.trim()) return;
+
+    socket.connect();
+    socket.emit("student:join", { name });
+
+    navigate("/waiting");
+  };
 
   return (
     <div className="join-container">
@@ -16,7 +28,11 @@ const JoinPoll = () => {
           onChange={(e) => setName(e.target.value)}
         />
 
-        <button className="primary-btn" disabled={!name}>
+        <button
+          className="primary-btn"
+          onClick={handleJoin}
+          disabled={!name}
+        >
           Continue
         </button>
       </div>
