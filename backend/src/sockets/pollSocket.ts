@@ -1,86 +1,88 @@
 import { Server, Socket } from "socket.io";
-import Poll from "../models/Poll";
+import PollService from "../services/PollService";
+
+let pollTimeout: NodeJS.Timeout | null = null;
 
 export const pollSocketHandler = (io: Server) => {
   io.on("connection", (socket: Socket) => {
     console.log("Socket connected:", socket.id);
 
-    socket.on("poll:create", async ({ question, options }) => {
+    socket.on("poll:create", async ({ question, options, duration }) => {
       try {
         console.log("poll:create");
 
-        await Poll.updateMany({ isActive: true }, { isActive: false });
-
-        const poll = await Poll.create({
+        const poll = await PollService.createPoll(
           question,
-          options: options.map((text: string) => ({ text })),
-          isActive: true,
-          voters: [],
+          options,
+          duration
+        );
+
+        io.emit("POLL_STARTED", {
+          poll,
+          remainingTime: duration,
         });
 
-        console.log("POLL_STARTED");
-        io.emit("POLL_STARTED", { poll });
+        if (pollTimeout) clearTimeout(pollTimeout);
+
+        pollTimeout = setTimeout(async () => {
+          const endedPoll = await PollService.endPoll();
+          if (endedPoll) {
+            console.log("POLL_ENDED (AUTO)");
+            io.emit("POLL_ENDED", { poll: endedPoll });
+          }
+        }, duration * 1000);
       } catch (err) {
         console.error("poll:create error", err);
       }
     });
 
-    socket.on("poll:end", async () => {
-  try {
-    const poll = await Poll.findOne({ isActive: true });
-    if (!poll) return;
-
-    poll.isActive = false;
-    await poll.save();
-
-    console.log("POLL_ENDED");
-    io.emit("POLL_ENDED");
-  } catch (err) {
-    console.error("poll:end error", err);
-  }
-});
-
-
     socket.on("GET_ACTIVE_POLL", async () => {
       try {
-        const poll = await Poll.findOne({ isActive: true });
+        const data = await PollService.getActivePollWithRemainingTime();
+        if (!data) return;
 
-        if (!poll) {
-          console.log("No active poll");
-          return;
-        }
-
-        console.log("Sending active poll to student");
-        socket.emit("POLL_STARTED", { poll });
+        socket.emit("POLL_STARTED", {
+          poll: data.poll,
+          remainingTime: data.remainingTime,
+        });
       } catch (err) {
         console.error("GET_ACTIVE_POLL error", err);
       }
     });
 
     socket.on("vote:cast", async ({ optionIndex }) => {
-  try {
-    const poll = await Poll.findOne({ isActive: true });
-    if (!poll) return;
+      try {
+        const result = await PollService.castVote(
+          optionIndex,
+          socket.id
+        );
 
-    if (poll.voters.includes(socket.id)) {
-      socket.emit("VOTE_REJECTED", {
-        message: "You have already voted",
-      });
-      return;
-    }
+        if (result?.error) {
+          socket.emit("VOTE_REJECTED", {
+            message: result.error,
+          });
+          return;
+        }
 
-    if (!poll.options[optionIndex]) return;
+        io.emit("POLL_UPDATED", { poll: result.poll });
+      } catch (err) {
+        console.error("vote:cast error", err);
+      }
+    });
 
-    poll.options[optionIndex].votes += 1;
-    poll.voters.push(socket.id);
+    socket.on("poll:end", async () => {
+      try {
+        if (pollTimeout) clearTimeout(pollTimeout);
 
-    await poll.save();
-
-    io.emit("POLL_UPDATED", { poll });
-  } catch (err) {
-    console.error("vote:cast error", err);
-  }
-});
+        const poll = await PollService.endPoll();
+        if (poll) {
+          console.log("POLL_ENDED (MANUAL)");
+          io.emit("POLL_ENDED", { poll });
+        }
+      } catch (err) {
+        console.error("poll:end error", err);
+      }
+    });
 
     socket.on("disconnect", () => {
       console.log("Socket disconnected:", socket.id);

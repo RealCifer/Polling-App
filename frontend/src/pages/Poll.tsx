@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { socket } from "../services/socket";
+import { usePollTimer } from "../hooks/usePollTimer";
 import "../styles/poll.css";
 
 const Poll = () => {
   const [poll, setPoll] = useState<any>(null);
   const [pollEnded, setPollEnded] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  const timeLeft = usePollTimer(remainingTime);
 
   useEffect(() => {
     socket.emit("GET_ACTIVE_POLL");
 
-    socket.on("POLL_STARTED", ({ poll }) => {
+    socket.on("POLL_STARTED", ({ poll, remainingTime }) => {
       setPoll(poll);
+      setRemainingTime(remainingTime);
       setPollEnded(false);
       setHasVoted(false);
     });
@@ -37,7 +42,7 @@ const Poll = () => {
   }, []);
 
   const castVote = (index: number) => {
-    if (pollEnded || hasVoted) return;
+    if (pollEnded || hasVoted || timeLeft <= 0) return;
     socket.emit("vote:cast", { optionIndex: index });
     setHasVoted(true);
   };
@@ -55,11 +60,16 @@ const Poll = () => {
       <div className="card">
         <h3 className="poll-question">{poll.question}</h3>
 
+        {/* TIMER */}
+        <p style={{ textAlign: "center", marginBottom: "16px" }}>
+          ⏱️ Time left: <strong>{timeLeft}s</strong>
+        </p>
+
         {poll.options.map((opt: any, index: number) => (
           <button
             key={index}
             className="poll-option"
-            disabled={pollEnded || hasVoted}
+            disabled={pollEnded || hasVoted || timeLeft <= 0}
             onClick={() => castVote(index)}
           >
             <span>{opt.text}</span>
@@ -67,7 +77,7 @@ const Poll = () => {
           </button>
         ))}
 
-        {pollEnded && (
+        {(pollEnded || timeLeft <= 0) && (
           <p className="poll-ended-text">Poll has ended</p>
         )}
       </div>

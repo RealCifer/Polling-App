@@ -5,15 +5,22 @@ import "../../styles/createPoll.css";
 
 const CreatePoll = () => {
   const navigate = useNavigate();
+
   const [question, setQuestion] = useState("");
-  const [options, setOptions] = useState(["", ""]);
+  const [options, setOptions] = useState<string[]>(["", ""]);
+  const [duration, setDuration] = useState(60); // seconds
 
   const addOption = () => setOptions([...options, ""]);
 
   const handleCreatePoll = () => {
-    if (!question.trim() || options.some(o => !o.trim())) return;
+    if (!question.trim() || options.some((o) => !o.trim())) return;
 
-    socket.emit("poll:create", { question, options });
+    socket.emit("poll:create", {
+      question,
+      options,
+      duration,
+    });
+
     navigate("/admin/live");
   };
 
@@ -23,6 +30,7 @@ const CreatePoll = () => {
         <h2>Create a Poll</h2>
 
         <input
+          className="input"
           placeholder="Enter your question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
@@ -31,6 +39,7 @@ const CreatePoll = () => {
         {options.map((opt, i) => (
           <input
             key={i}
+            className="input"
             placeholder={`Option ${i + 1}`}
             value={opt}
             onChange={(e) => {
@@ -40,6 +49,17 @@ const CreatePoll = () => {
             }}
           />
         ))}
+
+        {}
+        <input
+          className="input"
+          type="number"
+          min={10}
+          max={300}
+          value={duration}
+          onChange={(e) => setDuration(Number(e.target.value))}
+          placeholder="Duration (seconds)"
+        />
 
         <button className="secondary" onClick={addOption}>
           + Add Option

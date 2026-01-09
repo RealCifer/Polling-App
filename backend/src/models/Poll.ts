@@ -9,29 +9,28 @@ export interface PollDocument extends Document {
   question: string;
   options: Option[];
   isActive: boolean;
-  voters: string[]; 
+  duration: number;   
+  startTime: Date;    
+  voters: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-const optionSchema = new Schema<Option>({
-  text: { type: String, required: true },
+const optionSchema = new Schema({
+  text: String,
   votes: { type: Number, default: 0 },
 });
 
-const pollSchema = new Schema<PollDocument>(
+const pollSchema = new Schema(
   {
-    question: { type: String, required: true },
-    options: { type: [optionSchema], required: true },
+    question: String,
+    options: [optionSchema],
     isActive: { type: Boolean, default: true },
-
-    voters: {
-      type: [String],
-      default: [],
-    },
+    duration: { type: Number, required: true }, 
+    startTime: { type: Date, required: true },
+    voters: { type: [String], default: [] },
   },
   { timestamps: true }
 );
 
-const Poll = mongoose.model<PollDocument>("Poll", pollSchema);
-export default Poll;
+export default mongoose.model<PollDocument>("Poll", pollSchema);
