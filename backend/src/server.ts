@@ -8,7 +8,7 @@ import { pollSocketHandler } from "./sockets/pollSocket";
 dotenv.config();
 
 app.get("/", (_req, res) => {
-  res.send("Live Polling Backend is running 🚀");
+  res.send("Live Polling Backend is running ");
 });
 
 const server = http.createServer(app);
