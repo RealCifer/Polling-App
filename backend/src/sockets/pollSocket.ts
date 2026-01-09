@@ -1,53 +1,65 @@
 import { Server, Socket } from "socket.io";
-
-let activePoll: any = null;
+import { Poll } from "../models/Poll";
+import { Vote } from "../models/Vote";
 
 export const pollSocketHandler = (io: Server) => {
   io.on("connection", (socket: Socket) => {
-    console.log("🟢 Socket connected:", socket.id);
+    console.log("Socket connected:", socket.id);
 
-    socket.on("poll:create", ({ question, options }) => {
-      console.log("📥 poll:create received");
+    socket.on("poll:create", async ({ question, options }) => {
+      try {
+        console.log("poll:create");
 
-      activePoll = {
-        id: Date.now().toString(),
-        question,
-        options: options.map((text: string) => ({
-          text,
-          votes: 0,
-        })),
-      };
+        await Poll.updateMany({ isActive: true }, { isActive: false });
 
-      console.log("📤 Broadcasting POLL_STARTED");
-      io.emit("POLL_STARTED", { poll: activePoll });
-    });
+        const poll = await Poll.create({
+          question,
+          options: options.map((text: string) => ({ text })),
+          isActive: true,
+        });
 
-    socket.on("GET_ACTIVE_POLL", () => {
-      console.log("📥 GET_ACTIVE_POLL from", socket.id);
-
-      if (!activePoll) {
-        console.log("⚠️ No active poll yet");
-        return;
+        console.log("POLL_STARTED");
+        io.emit("POLL_STARTED", { poll });
+      } catch (err) {
+        console.error("poll:create error", err);
       }
-
-      console.log("📤 Sending POLL_STARTED to student");
-      socket.emit("POLL_STARTED", { poll: activePoll });
     });
 
-    socket.on("vote:cast", ({ optionIndex }) => {
-      console.log("📥 vote:cast", optionIndex);
+    socket.on("GET_ACTIVE_POLL", async () => {
+      try {
+        const poll = await Poll.findOne({ isActive: true });
 
-      if (!activePoll) return;
-      if (!activePoll.options[optionIndex]) return;
+        if (!poll) {
+          console.log("No active poll");
+          return;
+        }
 
-      activePoll.options[optionIndex].votes += 1;
+        console.log("Sending active poll to student");
+        socket.emit("POLL_STARTED", { poll });
+      } catch (err) {
+        console.error("GET_ACTIVE_POLL error", err);
+      }
+    });
 
-      console.log("📤 Broadcasting POLL_UPDATED");
-      io.emit("POLL_UPDATED", { poll: activePoll });
+    socket.on("vote:cast", async ({ optionIndex }) => {
+      try {
+        const poll = await Poll.findOne({ isActive: true });
+        if (!poll) return;
+
+        if (!poll.options[optionIndex]) return;
+
+        poll.options[optionIndex].votes += 1;
+        await poll.save();
+
+        console.log("POLL_UPDATED");
+        io.emit("POLL_UPDATED", { poll });
+      } catch (err) {
+        console.error("vote:cast error", err);
+      }
     });
 
     socket.on("disconnect", () => {
-      console.log("🔴 Socket disconnected:", socket.id);
+      console.log("Socket disconnected:", socket.id);
     });
   });
 };
