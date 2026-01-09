@@ -1,42 +1,54 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./roleSelect.css";
 
 const RoleSelect = () => {
   const [role, setRole] = useState<"student" | "teacher" | null>(null);
   const navigate = useNavigate();
 
   const handleContinue = () => {
-    if (role === "student") navigate("/join");
-    if (role === "teacher") navigate("/admin/create");
+    if (!role) return;
+    navigate(role === "student" ? "/join" : "/admin/create");
   };
 
   return (
-    <div className="role-page">
-      <div className="role-card-wrapper">
-        <h1>Welcome to the Live Polling System</h1>
+    <div className="page-center">
+      <div className="card">
+        <h2>Welcome to the Live Polling System</h2>
         <p>Please select the role that best describes you</p>
 
-        <div className="role-cards">
+        {/* ROLE CARDS */}
+        <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
           <div
-            className={`role-card ${role === "student" ? "active" : ""}`}
+            className="btn-outline"
+            style={{
+              flex: 1,
+              borderColor: role === "student" ? "#7765da" : "#e6e6e6",
+            }}
             onClick={() => setRole("student")}
           >
-            <h3>I’m a Student</h3>
-            <p>Join a live poll and submit your answer in real time</p>
+            <strong>I’m a Student</strong>
+            <p style={{ fontSize: "12px", marginTop: "6px" }}>
+              Join a live poll and submit your answer in real time
+            </p>
           </div>
 
           <div
-            className={`role-card ${role === "teacher" ? "active" : ""}`}
+            className="btn-outline"
+            style={{
+              flex: 1,
+              borderColor: role === "teacher" ? "#7765da" : "#e6e6e6",
+            }}
             onClick={() => setRole("teacher")}
           >
-            <h3>I’m a Teacher</h3>
-            <p>Create polls and view live results</p>
+            <strong>I’m a Teacher</strong>
+            <p style={{ fontSize: "12px", marginTop: "6px" }}>
+              Create polls and view live results
+            </p>
           </div>
         </div>
 
         <button
-          className="primary-btn"
+          className="btn-primary"
           disabled={!role}
           onClick={handleContinue}
         >

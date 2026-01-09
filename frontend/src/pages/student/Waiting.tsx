@@ -6,24 +6,27 @@ const Waiting = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handlePollStart = () => {
+    socket.on("POLL_STARTED", () => {
       navigate("/poll");
-    };
-
-    socket.on("POLL_STARTED", handlePollStart);
+    });
 
     socket.emit("GET_ACTIVE_POLL");
 
     return () => {
-      socket.off("POLL_STARTED", handlePollStart);
+      socket.off("POLL_STARTED");
     };
   }, [navigate]);
 
   return (
     <div className="page-center">
-      <div className="card">
-        <h2>Waiting for the teacher to start the poll</h2>
-        <p>Please stay on this page.</p>
+      <div className="card" style={{ textAlign: "center" }}>
+        <span className="badge">Live Poll</span>
+
+        <div className="loader" />
+
+        <p style={{ marginTop: "12px" }}>
+          Wait for the teacher to ask questions...
+        </p>
       </div>
     </div>
   );

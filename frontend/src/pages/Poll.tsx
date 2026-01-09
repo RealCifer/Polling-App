@@ -12,7 +12,8 @@ const Poll = () => {
 
     socket.on("POLL_STARTED", ({ poll }) => {
       setPoll(poll);
-      setPollEnded(false); 
+      setPollEnded(false);
+      setHasVoted(false);
     });
 
     socket.on("POLL_UPDATED", ({ poll }) => {
@@ -20,51 +21,49 @@ const Poll = () => {
     });
 
     socket.on("POLL_ENDED", () => {
-  setPollEnded(true);
-});
+      setPollEnded(true);
+    });
 
-socket.on("VOTE_REJECTED", ({ message }) => {
-  alert(message);
-});
-
-
+    socket.on("VOTE_REJECTED", ({ message }) => {
+      alert(message);
+    });
 
     return () => {
       socket.off("POLL_STARTED");
       socket.off("POLL_UPDATED");
-      socket.off("POLL_ENDED"); 
+      socket.off("POLL_ENDED");
+      socket.off("VOTE_REJECTED");
     };
   }, []);
 
   const castVote = (index: number) => {
-  if (pollEnded || hasVoted) return;
-
-  socket.emit("vote:cast", { optionIndex: index });
-  setHasVoted(true);
-};
+    if (pollEnded || hasVoted) return;
+    socket.emit("vote:cast", { optionIndex: index });
+    setHasVoted(true);
+  };
 
   if (!poll) {
     return (
-      <div className="poll-page">
-        <div className="poll-card">Waiting for poll...</div>
+      <div className="page-center">
+        <div className="card">Waiting for poll…</div>
       </div>
     );
   }
 
   return (
-    <div className="poll-page">
-      <div className="poll-card">
-        <h2 className="poll-question">{poll.question}</h2>
+    <div className="page-center">
+      <div className="card">
+        <h3 className="poll-question">{poll.question}</h3>
 
         {poll.options.map((opt: any, index: number) => (
           <button
             key={index}
             className="poll-option"
+            disabled={pollEnded || hasVoted}
             onClick={() => castVote(index)}
-            disabled={pollEnded || hasVoted} 
           >
             <span>{opt.text}</span>
-            <span className="vote-count">{opt.votes} votes</span>
+            <span className="vote-count">{opt.votes}</span>
           </button>
         ))}
 
