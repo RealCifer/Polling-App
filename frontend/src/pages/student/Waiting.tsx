@@ -20,8 +20,11 @@ const Waiting = () => {
   }, [navigate]);
 
   return (
-    <div className="waiting-container">
-      <p>Wait for the teacher to ask questions...</p>
+    <div className="page-center">
+      <div className="card">
+        <h2>Waiting for the teacher to start the poll</h2>
+        <p>Please stay on this page.</p>
+      </div>
     </div>
   );
 };

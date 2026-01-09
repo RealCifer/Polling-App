@@ -5,25 +5,29 @@ const PollHistory = () => {
 
   useEffect(() => {
     fetch("http://localhost:5000/api/polls/history")
-      .then(res => res.json())
-      .then(data => setPolls(data));
+      .then((res) => res.json())
+      .then((data) => setPolls(data));
   }, []);
 
   return (
-    <div className="poll-history-page">
-      <h2>Poll History</h2>
+    <div className="page-center">
+      <div className="card">
+        <h2>Poll History</h2>
 
-      {polls.map(poll => (
-        <div key={poll._id} className="poll-card">
-          <h3>{poll.question}</h3>
+        {polls.length === 0 && <p>No past polls yet.</p>}
 
-          {poll.options.map((opt: any, i: number) => (
-            <div key={i}>
-              {opt.text} — {opt.votes} votes
-            </div>
-          ))}
-        </div>
-      ))}
+        {polls.map((poll) => (
+          <div key={poll._id} style={{ marginBottom: "16px" }}>
+            <h4>{poll.question}</h4>
+
+            {poll.options.map((opt: any, i: number) => (
+              <div key={i}>
+                {opt.text} — {opt.votes} votes
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

@@ -58,30 +58,29 @@ export const pollSocketHandler = (io: Server) => {
     });
 
     socket.on("vote:cast", async ({ optionIndex }) => {
-      try {
-        const poll = await Poll.findOne({ isActive: true });
-        if (!poll) return;
+  try {
+    const poll = await Poll.findOne({ isActive: true });
+    if (!poll) return;
 
-        if (poll.voters.includes(socket.id)) {
-          socket.emit("VOTE_REJECTED", {
-            message: "You have already voted",
-          });
-          return;
-        }
+    if (poll.voters.includes(socket.id)) {
+      socket.emit("VOTE_REJECTED", {
+        message: "You have already voted",
+      });
+      return;
+    }
 
-        if (!poll.options[optionIndex]) return;
+    if (!poll.options[optionIndex]) return;
 
-        poll.options[optionIndex].votes += 1;
-        poll.voters.push(socket.id);
+    poll.options[optionIndex].votes += 1;
+    poll.voters.push(socket.id);
 
-        await poll.save();
+    await poll.save();
 
-        console.log("POLL_UPDATED");
-        io.emit("POLL_UPDATED", { poll });
-      } catch (err) {
-        console.error("vote:cast error", err);
-      }
-    });
+    io.emit("POLL_UPDATED", { poll });
+  } catch (err) {
+    console.error("vote:cast error", err);
+  }
+});
 
     socket.on("disconnect", () => {
       console.log("Socket disconnected:", socket.id);

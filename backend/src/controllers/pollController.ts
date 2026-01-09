@@ -7,7 +7,7 @@ export const getPollHistory = async (req: Request, res: Response) => {
       .sort({ createdAt: -1 });
 
     res.status(200).json(polls);
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({ message: "Failed to fetch poll history" });
   }
 };

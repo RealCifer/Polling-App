@@ -4,13 +4,12 @@ import { SOCKET_EVENTS } from "../../services/socketEvents";
 import "./liveResults.css";
 
 type Option = {
-  id: string;
   text: string;
   votes: number;
 };
 
 type Poll = {
-  id: string;
+  _id: string;
   question: string;
   options: Option[];
 };
@@ -20,22 +19,16 @@ const LiveResults = () => {
   const [pollEnded, setPollEnded] = useState(false);
 
   useEffect(() => {
-    socket.connect();
-
     socket.on(SOCKET_EVENTS.POLL_STARTED, ({ poll }) => {
-      console.log("POLL_STARTED received", poll);
       setPoll(poll);
-      setPollEnded(false); // reset if new poll starts
+      setPollEnded(false);
     });
 
     socket.on(SOCKET_EVENTS.POLL_UPDATED, ({ poll }) => {
-      console.log("POLL_UPDATED received", poll);
       setPoll(poll);
     });
 
-    socket.on(SOCKET_EVENTS.POLL_ENDED, ({ poll }) => {
-      console.log("POLL_ENDED received", poll);
-      setPoll(poll);
+    socket.on(SOCKET_EVENTS.POLL_ENDED, () => {
       setPollEnded(true);
     });
 
@@ -49,7 +42,13 @@ const LiveResults = () => {
   }, []);
 
   if (!poll) {
-    return <p className="waiting-text">Waiting for poll data...</p>;
+    return (
+      <div className="page-center">
+        <div className="card">
+          <p>Waiting for poll data...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -57,14 +56,13 @@ const LiveResults = () => {
       <div className="card">
         <h3>{poll.question}</h3>
 
-        {poll.options.map((o) => (
-          <div key={o.id} className="option-row">
+        {poll.options.map((o, index) => (
+          <div key={index} className="option-row">
             <span>{o.text}</span>
             <span className="badge">{o.votes} votes</span>
           </div>
         ))}
 
-        {}
         <button
           className="end-poll-btn"
           disabled={pollEnded}
