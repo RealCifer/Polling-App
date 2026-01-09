@@ -21,14 +21,14 @@ Built as part of an **SDE Intern Assignment**, with focus on:
 - Prevent voting after poll ends
 - View history of completed polls
 
-### 🎓 Student
+### Student
 - Join poll by entering name
 - Waiting screen until poll starts
 - Vote exactly once per poll
 - Live vote count updates
 - Automatic poll disable after end
 
-### ⚙️ System
+### System
 - Real-time communication using Socket.IO
 - Persistent storage using MongoDB
 - One-vote-per-student enforcement (backend)
