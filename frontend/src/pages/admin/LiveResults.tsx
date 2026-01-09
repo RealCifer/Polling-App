@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { socket } from "../../services/socket";
 import { SOCKET_EVENTS } from "../../services/socketEvents";
-import "./liveResults.css";
+import "../../styles/adminLive.css";
 
 type Option = {
   text: string;
@@ -9,7 +9,6 @@ type Option = {
 };
 
 type Poll = {
-  _id: string;
   question: string;
   options: Option[];
 };
@@ -45,7 +44,7 @@ const LiveResults = () => {
     return (
       <div className="page-center">
         <div className="card">
-          <p>Waiting for poll data...</p>
+          <p className="waiting-text">Waiting for poll to start…</p>
         </div>
       </div>
     );
@@ -54,19 +53,20 @@ const LiveResults = () => {
   return (
     <div className="page-center">
       <div className="card">
-        <h3>{poll.question}</h3>
+        <h3 className="admin-question">{poll.question}</h3>
 
-        {poll.options.map((o, index) => (
-          <div key={index} className="option-row">
-            <span>{o.text}</span>
-            <span className="badge">{o.votes} votes</span>
+        {poll.options.map((opt, index) => (
+          <div key={index} className="admin-option">
+            <span>{opt.text}</span>
+            <span className="badge">{opt.votes}</span>
           </div>
         ))}
 
         <button
-          className="end-poll-btn"
+          className="btn-primary"
           disabled={pollEnded}
           onClick={() => socket.emit("poll:end")}
+          style={{ marginTop: "16px" }}
         >
           {pollEnded ? "Poll Ended" : "End Poll"}
         </button>
