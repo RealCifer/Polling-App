@@ -239,3 +239,13 @@ Live Polling System
 ✔ Completed  
 ✔ Tested  
 ✔ Ready for Submission
+
+## Backend deployed link 
+```
+https://polling-app-ks6s.onrender.com
+```
+## Frontend deployed link 
+```
+https://polling-app-omega.vercel.app/
+```
+
