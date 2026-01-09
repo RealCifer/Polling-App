@@ -4,25 +4,34 @@ import "../styles/poll.css";
 
 const Poll = () => {
   const [poll, setPoll] = useState<any>(null);
+  const [pollEnded, setPollEnded] = useState(false);
 
   useEffect(() => {
     socket.emit("GET_ACTIVE_POLL");
 
     socket.on("POLL_STARTED", ({ poll }) => {
       setPoll(poll);
+      setPollEnded(false); 
     });
 
     socket.on("POLL_UPDATED", ({ poll }) => {
       setPoll(poll);
     });
 
+    socket.on("POLL_ENDED", () => {
+      setPollEnded(true);
+      alert("Poll has ended");
+    });
+
     return () => {
       socket.off("POLL_STARTED");
       socket.off("POLL_UPDATED");
+      socket.off("POLL_ENDED"); 
     };
   }, []);
 
   const castVote = (index: number) => {
+    if (pollEnded) return; 
     socket.emit("vote:cast", { optionIndex: index });
   };
 
@@ -44,11 +53,16 @@ const Poll = () => {
             key={index}
             className="poll-option"
             onClick={() => castVote(index)}
+            disabled={pollEnded} 
           >
             <span>{opt.text}</span>
             <span className="vote-count">{opt.votes} votes</span>
           </button>
         ))}
+
+        {pollEnded && (
+          <p className="poll-ended-text">Poll has ended</p>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { Poll } from "../models/Poll";
-import { Vote } from "../models/Vote";
+import Poll from "../models/Poll";
 
 export const pollSocketHandler = (io: Server) => {
   io.on("connection", (socket: Socket) => {
@@ -16,6 +15,7 @@ export const pollSocketHandler = (io: Server) => {
           question,
           options: options.map((text: string) => ({ text })),
           isActive: true,
+          voters: [],
         });
 
         console.log("POLL_STARTED");
@@ -24,6 +24,22 @@ export const pollSocketHandler = (io: Server) => {
         console.error("poll:create error", err);
       }
     });
+
+    socket.on("poll:end", async () => {
+  try {
+    const poll = await Poll.findOne({ isActive: true });
+    if (!poll) return;
+
+    poll.isActive = false;
+    await poll.save();
+
+    console.log("POLL_ENDED");
+    io.emit("POLL_ENDED");
+  } catch (err) {
+    console.error("poll:end error", err);
+  }
+});
+
 
     socket.on("GET_ACTIVE_POLL", async () => {
       try {
@@ -46,9 +62,18 @@ export const pollSocketHandler = (io: Server) => {
         const poll = await Poll.findOne({ isActive: true });
         if (!poll) return;
 
+        if (poll.voters.includes(socket.id)) {
+          socket.emit("VOTE_REJECTED", {
+            message: "You have already voted",
+          });
+          return;
+        }
+
         if (!poll.options[optionIndex]) return;
 
         poll.options[optionIndex].votes += 1;
+        poll.voters.push(socket.id);
+
         await poll.save();
 
         console.log("POLL_UPDATED");

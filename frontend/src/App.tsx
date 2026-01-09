@@ -9,6 +9,8 @@ import Poll from "./pages/Poll";
 import CreatePoll from "./pages/admin/CreatePoll";
 import LiveResults from "./pages/admin/LiveResults";
 
+import PollHistory from "./pages/admin/PollHistory";
+
 const App = () => {
   return (
     <Routes>
@@ -23,6 +25,9 @@ const App = () => {
       {}
       <Route path="/admin/create" element={<CreatePoll />} />
       <Route path="/admin/live" element={<LiveResults />} />
+
+      {}
+      <Route path="/admin/history" element={<PollHistory />} />
     </Routes>
   );
 };
